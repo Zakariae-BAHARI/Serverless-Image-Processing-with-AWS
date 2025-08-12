@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless Image Processor Demo
+
+Globals:
+  Function:
+    Timeout: 60
+    Runtime: python3.11
+    MemorySize: 512
+
+Resources:
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: imgproc-source
+
+  ProcessedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: imgproc-processed
+
+  ImageMetadataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ImageMetadata-Table
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: image_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: image_key
+          KeyType: HASH
+
+  ImageProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ImageProcessor-Function
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          DEST_BUCKET: imgproc-processed
+          DDB_TABLE: ImageMetadata-Table
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource: arn:aws:s3:::imgproc-source/*
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: arn:aws:s3:::imgproc-processed/*
+        - Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:PutItem
+            Resource: arn:aws:dynamodb:us-east-1:123456789012:table/ImageMetadata-Table
+      Events:
+        S3Upload:
+          Type: S3
+          Properties:
+            Bucket: imgproc-source
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .jpg
+
+Outputs:
+  SourceBucketName:
+    Value: imgproc-source
+  ProcessedBucketName:
+    Value: imgproc-processed
+  LambdaFunctionName:
+    Value: ImageProcessor-Function
+  DynamoDBTable:
+    Value: ImageMetadata-Table
