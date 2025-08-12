@@ -22,7 +22,7 @@ When a user uploads an image to the **source S3 bucket**, an `s3:ObjectCreated:*
 
 ---
 
-**Mermaid source (docs/architecture.mmd)**:
+**diagram**:
 ```mermaid
 graph LR
   A[User] -->|Upload Image| S3Source(Source Bucket)
