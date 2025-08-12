@@ -1,4 +1,3 @@
-# Serverless-Image-Processing-with-S3-and-Lambda
 # Serverless Image Processor AWS (S3 & Lambda)
 
 ## Overview
