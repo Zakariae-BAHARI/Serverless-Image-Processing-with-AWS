@@ -28,6 +28,6 @@ graph LR
   A[User] -->|Upload Image| S3Source(Source Bucket)
   S3Source -->|S3 Event| Lambda[Image Processor Lambda]
   Lambda --> S3Dest(Processed Bucket)
-  Lambda -->|optional| DDB[DynamoDB Metadata Table]
-  API[Optional API Gateway] --> S3Source
+  Lambda --> DDB[DynamoDB Metadata Table]
+  API[ API Gateway] --> S3Source
 
